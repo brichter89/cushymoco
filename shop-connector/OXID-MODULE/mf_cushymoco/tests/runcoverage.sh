@@ -2,6 +2,8 @@
 
 TESTDIR=$(dirname $0);
 
+TARGET=$@;
+
 CODECOVERAGE=1 \
-COVERAGE='--coverage-html '$TESTDIR'/coverage --log-metrics '$TESTDIR'/metrics.xml' \
-$TESTDIR/runtests.sh
+COVERAGE='--coverage-html '$TESTDIR'/coverage' \
+$TESTDIR/runtests.sh $TARGET

@@ -40,7 +40,7 @@ class cushymoco extends oxUBase
      */
     protected $_aStateIdCache = array();
 
-    protected $_iBasketProductsCount;
+    protected $_iBasketProductsCount = null;
 
     /**
      * Custom exception handler.
@@ -58,7 +58,13 @@ class cushymoco extends oxUBase
             )
         );
 
-        exit($sMessage);
+        echo $sMessage;
+
+        if ( defined( 'OXID_PHP_UNIT' ) ) {
+            return;
+        }
+
+        exit();
     }
 
     /**
@@ -76,11 +82,10 @@ class cushymoco extends oxUBase
             $this->_initVersionLayer();
         } catch (Exception $e) {
             $sMessage = json_encode(
-                $this->_errorMessage(
-                    $e->getMessage()
-                ),
+                $this->_errorMessage($e->getMessage()),
                 JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
             );
+
             if ($this->_hasRegistry('getUtils')) {
                 $oUtils = oxRegistry::getUtils();
             } else {
@@ -211,7 +216,10 @@ class cushymoco extends oxUBase
             . str_replace('.', '', substr($sShopVersion, 0, strrpos($sShopVersion, '.')))
             . '*.php';
         $aLayerClasses        = array();
-        $oDI                  = new DirectoryIterator(getShopBasePath() . 'modules/mf_cushymoco/core');
+        $sCoreDir             = realpath(dirname(__FILE__) . '/../../core');
+        // TODO: inject iterator for testing
+        $oDI                  = new DirectoryIterator($sCoreDir);
+
         foreach ($oDI as $oEntry) {
             if (
                 $oEntry->isDir() ||
@@ -255,17 +263,24 @@ class cushymoco extends oxUBase
      */
     protected function _generateMessage($error = null, $result = null)
     {
-        if ($this->_iBasketProductsCount === null) {
+        return array(
+            'error'         => $error,
+            'result'        => $result,
+            'cartItemCount' => $this->_getCartItemCount(),
+        );
+    }
+
+    protected function _getCartItemCount() {
+        if (
+            $this->_iBasketProductsCount === null
+            && $this->_oVersionLayer !== null
+        ) {
             $oBasket = $this->_oVersionLayer->getBasket();
             $oBasket->calculateBasket();
             $this->_iBasketProductsCount = $oBasket->getProductsCount();
         }
 
-        return array(
-            'error'         => $error,
-            'result'        => $result,
-            'cartItemCount' => $this->_iBasketProductsCount,
-        );
+        return $this->_iBasketProductsCount;
     }
 
     /**
