@@ -56,7 +56,7 @@ echo "=========\nrunning php version ".phpversion()."\n\n============\n";
 /**
  * PHPUnit_Framework_TestCase implemetnation for adding and testing all unit tests from unit dir
  */
-class mf_cushymocoTest extends PHPUnit_Framework_TestCase
+class mf_cushymocoTestsUnit extends PHPUnit_Framework_TestCase
 {
     /**
      * Test suite

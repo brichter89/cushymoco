@@ -405,6 +405,7 @@ class cushymoco extends oxUBase
                 $this->exceptionHandler($e);
             }
         } else {
+            // TODO: use translation
             $this->_sAjaxResponse = $this->_errorMessage("User " . $sUserName . " can not be logged in");
         }
     }
@@ -494,7 +495,7 @@ class cushymoco extends oxUBase
 
         if ($sSessionId != '') {
             $oSession = $this->_oVersionLayer->getSession();
-            if ($sSessionId != '' && $sSessionId == $oSession->getId()) {
+            if ($sSessionId == $oSession->getId()) {
                 $oCmpUsr->logout();
                 $oSession->destroy();
 

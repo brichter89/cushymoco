@@ -11,4 +11,4 @@ fi
 echo "Use flag -c to run coverage."
 echo
 
-OXID_VERSION=CE oxPATH=/var/www/oxideshop_ce_50/source/ bash $testrunner mf_cushymocoTest.php
+OXID_VERSION=CE oxPATH=/var/www/oxideshop_ce_50/source/ bash $testrunner mf_cushymocoTestsUnit.php
