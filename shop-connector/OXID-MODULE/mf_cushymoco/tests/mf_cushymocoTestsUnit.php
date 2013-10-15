@@ -73,7 +73,7 @@ class mf_cushymocoTestsUnit extends PHPUnit_Framework_TestCase
         $sFilter = getenv("PREG_FILTER");
 
         $aTestSuiteDirs = array( 'unit' );
-        $aTestDirs = array( '', 'modules/mf_cushymoco', 'modules/mf_cushymoco/application', 'modules/mf_cushymoco/core', 'modules/mf_cushymoco/out' );
+        $aTestDirs = array( '', 'modules/mf_cushymoco', 'modules/mf_cushymoco/application', 'modules/mf_cushymoco/core' );
         if (getenv('TEST_DIRS')) {
             $aTestDirs = explode('%', getenv('TEST_DIRS'));
         }

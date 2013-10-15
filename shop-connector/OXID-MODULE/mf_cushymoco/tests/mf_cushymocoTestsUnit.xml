@@ -1,0 +1,13 @@
+<phpunit bootstrap="../bootstrap.php"
+         colors="true"
+         verbose="true">
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory>../application</directory>
+            <directory>../core</directory>
+            <exclude>
+                <file>../core/VersionLayer460.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

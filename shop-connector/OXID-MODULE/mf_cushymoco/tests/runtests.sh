@@ -43,6 +43,6 @@ if test -z '$TARGET' ; then
 fi;
 
 oxPATH=$oxPATH oxMETADATA=$oxMETADATA \
-php -d 'memory_limit=1024M' \
-/usr/bin/phpunit --verbose --colors --bootstrap $TESTDIR/bootstrap.php $COVERAGE \
-$TESTDIR/$TARGET
+    php -d 'memory_limit=1024M' \
+    /usr/bin/phpunit --verbose --configuration=mf_cushymocoTestsUnit.xml --bootstrap $TESTDIR/bootstrap.php $COVERAGE \
+    $TESTDIR/$TARGET
