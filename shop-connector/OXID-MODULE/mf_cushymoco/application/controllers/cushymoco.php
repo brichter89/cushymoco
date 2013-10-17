@@ -493,24 +493,16 @@ class cushymoco extends oxUBase
         $sSessionId = $this->_getSessionId();
         $oCmpUsr    = $this->_getUserCmp();
 
-        if ($sSessionId != '') {
-            $oSession = $this->_oVersionLayer->getSession();
-            if ($sSessionId == $oSession->getId()) {
-                $oCmpUsr->logout();
-                $oSession->destroy();
+        $oSession = $this->_oVersionLayer->getSession();
+        $oCmpUsr->logout();
+        $oSession->destroy();
 
-                $aLogout = array(
-                    'sessionId' => $sSessionId,
-                    'logout'    => true,
-                );
+        $aLogout = array(
+            'sessionId' => $sSessionId,
+            'logout'    => true,
+        );
 
-                $this->_sAjaxResponse = $this->_successMessage($aLogout);
-            } else {
-                $this->_sAjaxResponse = $this->_errorMessage("User cannot be logged out");
-            }
-        } else {
-            $this->_sAjaxResponse = $this->_errorMessage("Session id missing");
-        }
+        $this->_sAjaxResponse = $this->_successMessage($aLogout);
     }
 
     /**
@@ -882,7 +874,7 @@ class cushymoco extends oxUBase
             $oParentCategory = $oCategory->getParentCategory();
             if (
                 $oCategory->getIsVisible() && (
-                    $sActCat === $oParentCategory || (
+                    is_null($sActCat) && is_null($oParentCategory) || (
                         null !== $oParentCategory && $sActCat == $oParentCategory->getId()
                     )
                 )
