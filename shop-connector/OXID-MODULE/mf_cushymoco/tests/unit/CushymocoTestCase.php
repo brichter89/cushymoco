@@ -59,4 +59,12 @@ class CushymocoTestCase extends OxidTestCase
         return $this->getProtectedPropertyValue($oCushymoco, '_sAjaxResponse');
     }
 
+    /**
+     * @return OxSession
+     */
+    public function getOxSession()
+    {
+        return oxRegistry::getSession();
+    }
+
 }
