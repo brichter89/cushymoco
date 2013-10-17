@@ -5,11 +5,19 @@ scriptDir="$(dirname $0)"
 cd "$scriptDir"
 
 testrunner="runtests.sh"
+filter=""
 
-if [ "$1" == "-c" ]; then
-    rm -rf "$scriptDir/coverage"
-    testrunner="runcoverage.sh"
-fi
+for option in "$@"; do
+    case $option in
+        '-c')
+            rm -rf "$scriptDir/coverage"
+            testrunner="runcoverage.sh"
+            ;;
+        '--filter='*)
+            filter="$filter $option"
+            ;;
+    esac
+done
 
 echo "Use flag -c to run coverage."
 echo
@@ -28,5 +36,5 @@ fi
 
 oxADMIN_PASSWD="$oxADMIN_PASSWD" \
     OXID_VERSION="$OXID_VERSION" \
-    oxPATH="$oxPATH" \
-    bash $testrunner mf_cushymocoTestsUnit.php
+    oxPATH=$oxPATH \
+    bash $testrunner $filter mf_cushymocoTestsUnit.php

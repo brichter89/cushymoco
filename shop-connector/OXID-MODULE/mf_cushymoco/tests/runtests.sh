@@ -2,6 +2,7 @@
 
 # test directory path
 TESTDIR=$(dirname $0);
+cd $TESTDIR
 
 # trying to find the metadata file path
 if [ ! $oxMETADATA ]; then
@@ -37,12 +38,7 @@ else
     fi
 fi
 
-TARGET=$@;
-if test -z '$TARGET' ; then
-    TARGET='unit';
-fi;
-
 oxPATH=$oxPATH oxMETADATA=$oxMETADATA \
     php -d 'memory_limit=1024M' \
     /usr/bin/phpunit --verbose --configuration=mf_cushymocoTestsUnit.xml --bootstrap $TESTDIR/bootstrap.php $COVERAGE \
-    $TESTDIR/$TARGET
+    "$@"
