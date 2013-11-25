@@ -671,4 +671,165 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testGetArticleVariants()
+    {
+        $expectedResult = array(
+            array(
+                'groupId'   => 0,
+                'variantId' => '5d4bc935f54e8f1f2cf08741638e1fcd',
+                'title'     => 'W 31/L 34'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => '8a34d35131d5f014799a4115a815116d',
+                'title'     => 'W 32/L 32'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => '67b65ed314181c4e222b662ef7dfc6d0',
+                'title'     => 'W 34/L 32'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => 'df1ca9142e8bb6bacb61fe5e2c22abb9',
+                'title'     => 'W 30/L 30'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => 'c2ba09fb91c16482ea1e981354e7fef7',
+                'title'     => 'W 31/L 30'
+            ),
+            array(
+                'groupId'   => 1,
+                'variantId' => '560173ba980b9f5f7f8d9d3cce1c2446',
+                'title'     => 'Dark Blue'
+            ),
+            array(
+                'groupId'   => 1,
+                'variantId' => '6f1979fb2d97601ca6f4dc09587dc9af',
+                'title'     => 'Schwarz'
+            )
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
+
+        $oCushy->getArticleVariants();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            $expectedResult,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleVariantsWhenFirstVariantSelected()
+    {
+        $expectedResult = array(
+            array(
+                'groupId'   => 0,
+                'variantId' => '5d4bc935f54e8f1f2cf08741638e1fcd',
+                'title'     => 'W 31/L 34'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => '8a34d35131d5f014799a4115a815116d',
+                'title'     => 'W 32/L 32'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => '67b65ed314181c4e222b662ef7dfc6d0',
+                'title'     => 'W 34/L 32'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => 'df1ca9142e8bb6bacb61fe5e2c22abb9',
+                'title'     => 'W 30/L 30'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => 'c2ba09fb91c16482ea1e981354e7fef7',
+                'title'     => 'W 31/L 30'
+            ),
+            array(
+                'groupId'   => 1,
+                'variantId' => '560173ba980b9f5f7f8d9d3cce1c2446',
+                'title'     => 'Dark Blue'
+            )
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
+        $this->setRequestParam('selectedVariant', array('5d4bc935f54e8f1f2cf08741638e1fcd'));
+
+        $oCushy->getArticleVariants();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            $expectedResult,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleVariantsWhenSecondVariantSelected()
+    {
+        $expectedResult = array (
+            array(
+                'groupId'   => 0,
+                'variantId' => '5d4bc935f54e8f1f2cf08741638e1fcd',
+                'title'     => 'W 31/L 34'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => '8a34d35131d5f014799a4115a815116d',
+                'title'     => 'W 32/L 32'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => '67b65ed314181c4e222b662ef7dfc6d0',
+                'title'     => 'W 34/L 32'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => 'df1ca9142e8bb6bacb61fe5e2c22abb9',
+                'title'     => 'W 30/L 30'
+            ),
+            array(
+                'groupId'   => 0,
+                'variantId' => 'c2ba09fb91c16482ea1e981354e7fef7',
+                'title'     => 'W 31/L 30'
+            )
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
+        $this->setRequestParam('selectedVariant', array('6f1979fb2d97601ca6f4dc09587dc9af'));
+
+        $oCushy->getArticleVariants();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            $expectedResult,
+            $ajaxResponse['result']
+        );
+    }
+
 }
