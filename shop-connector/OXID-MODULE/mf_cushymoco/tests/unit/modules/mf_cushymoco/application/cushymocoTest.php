@@ -3,42 +3,6 @@
 class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestCase {
 
     /**
-     * @param      $id
-     * @param      $title
-     * @param      $iconUrl
-     * @param bool $hasSubCarts
-     * @param null $parentCategory
-     * @param bool $isVisible
-     *
-     * @return PHPUnit_Framework_MockObject_MockObject
-     */
-    public function generateCategoryMock($id, $title, $iconUrl, $hasSubCarts = false, $parentCategory = null, $isVisible = true)
-    {
-        $oxCategory = $this->getMock(
-            'oxCategory',
-            array('getParentCategory', 'getIsVisible', 'getId', 'getIconUrl', 'getHasSubCats')
-        );
-        $oxCategory->expects($this->any())
-            ->method('getParentCategory')
-            ->will($this->returnValue($parentCategory));
-        $oxCategory->expects($this->any())
-            ->method('getIsVisible')
-            ->will($this->returnValue($isVisible));
-        $oxCategory->expects($this->any())
-            ->method('getId')
-            ->will($this->returnValue($id));
-        $oxCategory->expects($this->any())
-            ->method('getIconUrl')
-            ->will($this->returnValue($iconUrl));
-        $oxCategory->expects($this->any())
-            ->method('getHasSubCats')
-            ->will($this->returnValue($hasSubCarts));
-        $oxCategory->oxcategories__oxtitle = new oxField($title);
-
-        return $oxCategory;
-    }
-
-    /**
      * Test if init method sets a custom exception handler.
      */
     public function testInitSetsExceptionHandler()
@@ -64,35 +28,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         $oxUtils = $this->getMock('oxutils', array('showMessageAndExit'));
         $oxUtils->expects($this->once())
             ->method('showMessageAndExit')
-            ->with('{"error":"Can\u0027t find any shop version layer.","result":null,"cartItemCount":null}');
+            ->with('{"error":"Can\u0027t find any suitable version layer class for your shop.","result":null,"cartItemCount":null}');
         oxRegistry::set('oxUtils', $oxUtils);
 
         $oCushy = new cushymoco();
         $oCushy->init();
-    }
-
-    /**
-     * Test if init echos a json error when no suitable VersionLayer is found
-     * for the current shop version.
-     * Version layer for version 4.7.0 can be used for version 4.7.*
-     * but version layer for version 4.7.1 can only be used for exactly that
-     * version.
-     */
-    public function testInitExitsWithMessageWhenNoSuitableVersionLayerIsFound()
-    {
-        $this->markTestIncomplete("You need to be able to modify the version layer path first.");
-
-//        $this->setShopField('oxshops__oxversion', '1.2.3');
-//
-//        $oxUtils = $this->getMock('oxutils', array('showMessageAndExit'));
-//        $oxUtils->expects($this->once())
-//            ->method('showMessageAndExit')
-//            ->with('{"error":"Can\u0027t find suitable version layer class for your shop.","result":null,"cartItemCount":null}')
-//            ->will($this->returnValue('ok, und exit'));
-//        oxRegistry::set('oxUtils', $oxUtils);
-//
-//        $oCushy = new cushymoco();
-//        $oCushy->init();
     }
 
     /**
@@ -254,6 +194,56 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
     /**
      *
      */
+    public function testGetCategoryTitle()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $expectedTitle = "Category 1";
+
+        $cnid = 'CATEGORY_1';
+        $this->setRequestParam('cnid', new oxField($cnid));
+
+        $oxCategory1 = $this->generateCategoryMock(
+            array(),
+            $cnid,
+            $expectedTitle,
+            'http://url-to-icon.example/category_1.ico'
+        );
+
+        oxUtilsObject::setClassInstance('oxCategory', $oxCategory1);
+
+        $oCushy->getCategoryTitle();
+
+        $ajaxResponseValue = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            $expectedTitle,
+            $ajaxResponseValue['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetCategoryTitleWithNoCategoryId()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getCategoryTitle();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'Category ID not given!',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
     public function testGetCategoryList()
     {
         $expectedCategoryList = array(
@@ -261,13 +251,13 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
                 'categoryId' => "CATEGORY_1",
                 'title'      => "Category 1",
                 'icon'       => "http://dummy.url/icon_1",
-                'hasChild'   => false
+                'hasChild'   => true
             ),
             array(
                 'categoryId' => "CATEGORY_2",
                 'title'      => "Category 2",
                 'icon'       => "http://dummy.url/icon_2",
-                'hasChild'   => true
+                'hasChild'   => false
             )
         );
 
@@ -275,6 +265,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         $oCushy->init();
 
         $oxCategory_1 = $this->generateCategoryMock(
+            array(),
             $expectedCategoryList[0]['categoryId'],
             $expectedCategoryList[0]['title'],
             $expectedCategoryList[0]['icon'],
@@ -283,6 +274,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         // This should not be displayed because it is a subcategory of CATEGORY_1
         $oxCategory_1_1 = $this->generateCategoryMock(
+            array(),
             'CATEGORY_1_1',
             'Category 1 > 1',
             'http://dummy.url/icon_1_1',
@@ -291,6 +283,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
 
         $oxCategory_2 = $this->generateCategoryMock(
+            array(),
             $expectedCategoryList[1]['categoryId'],
             $expectedCategoryList[1]['title'],
             $expectedCategoryList[1]['icon'],
@@ -299,6 +292,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         // This should not be displayed because it is set to be not visible
         $oxCategory_3 = $this->generateCategoryMock(
+            array(),
             'CATEGORY_3',
             'Category 3',
             'http://dummy.url/icon_3',
@@ -307,42 +301,21 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             false
         );
 
-
+        // mock an iterator
         $oxCategoryList = $this->getMock(
             'oxCategoryList',
-            array('valid', 'current')
+            array('rewind', 'valid', 'current', 'key', 'next', 'count')
         );
-        $oxCategoryList->expects($this->at(0))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(1))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_1));
 
-        $oxCategoryList->expects($this->at(2))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(3))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_1_1));
-
-        $oxCategoryList->expects($this->at(4))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(5))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_2));
-
-        $oxCategoryList->expects($this->at(6))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(7))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_3));
-
-        $oxCategoryList->expects($this->at(8))
-            ->method('valid')
-            ->will($this->returnValue(false));
+        $oxCategoryList = $this->mockIterator(
+            $oxCategoryList,
+            array(
+                 $oxCategory_1,
+                 $oxCategory_1_1,
+                 $oxCategory_2,
+                 $oxCategory_3
+            )
+        );
 
 
         oxUtilsObject::setClassInstance('oxCategoryList', $oxCategoryList);
@@ -378,6 +351,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         // This should not be displayed because it is a top level category
         $oxCategory_1 = $this->generateCategoryMock(
+            array(),
             'CATEGORY_1',
             'Category 1',
             'http://dummy.url/icon_1',
@@ -385,6 +359,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
 
         $oxCategory_1_1 = $this->generateCategoryMock(
+            array(),
             $expectedCategoryList[0]['categoryId'],
             $expectedCategoryList[0]['title'],
             $expectedCategoryList[0]['icon'],
@@ -394,6 +369,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         // This should not be displayed because it is set to be not visible
         $oxCategory_1_2 = $this->generateCategoryMock(
+            array(),
             'CATEGORY_1_2',
             'Category 1 > 2',
             'http://dummy.url/icon_1_2',
@@ -404,14 +380,16 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         // This should not be displayed because it is a top level category
         $oxCategory_2 = $this->generateCategoryMock(
+            array(),
             'CATEGORY_2',
             'Category 2',
             'http://dummy.url/icon_2',
             true
         );
 
-        // This should not be displayed because it is sub category of CATEGORY_2
+        // This should not be displayed because it is no sub category of CATEGORY_1
         $oxCategory_2_1 = $this->generateCategoryMock(
+            array(),
             'CATEGORY_2_1',
             'Category 2 > 1',
             'http://dummy.url/icon_2_1',
@@ -422,46 +400,19 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         $oxCategoryList = $this->getMock(
             'oxCategoryList',
-            array('valid', 'current')
+            array('rewind', 'valid', 'current', 'key', 'next', 'count')
         );
-        $oxCategoryList->expects($this->at(0))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(1))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_1));
 
-        $oxCategoryList->expects($this->at(2))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(3))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_1_1));
-
-        $oxCategoryList->expects($this->at(4))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(5))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_1_2));
-
-        $oxCategoryList->expects($this->at(6))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(7))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_2));
-
-        $oxCategoryList->expects($this->at(8))
-            ->method('valid')
-            ->will($this->returnValue(true));
-        $oxCategoryList->expects($this->at(9))
-            ->method('current')
-            ->will($this->returnValue($oxCategory_2_1));
-
-        $oxCategoryList->expects($this->at(10))
-            ->method('valid')
-            ->will($this->returnValue(false));
+        $oxCategoryList = $this->mockIterator(
+            $oxCategoryList,
+            array(
+                $oxCategory_1,
+                $oxCategory_1_1,
+                $oxCategory_1_2,
+                $oxCategory_2,
+                $oxCategory_2_1
+            )
+        );
 
 
         oxUtilsObject::setClassInstance('oxCategoryList', $oxCategoryList);
@@ -477,6 +428,246 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         $this->assertEquals(
             $expectedCategoryList,
             $categoryList
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleList()
+    {
+        $currencySign = $actShopCurrencyObject = $this->getOxConfig()
+            ->getActShopCurrencyObject()
+            ->sign;
+
+        $expectedArticleList = array (
+            array (
+                'productId' => 'ARTICLE_1',
+                'title' => 'Article 1',
+                'shortDesc' => 'Description 1',
+                'price' => 1,
+                'currency' => $currencySign,
+                'formattedPrice' => '1 ' . $currencySign,
+                'icon' => 'http://dummy.url/icon_1',
+            )
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $actPage = 0;
+        $perPage = $this->getConfig()->getConfigParam('iNrofCatArticles');
+
+        $oxArticleList = $this->getMock(
+            'oxarticlelist',
+            array('setSqlLimit', 'rewind', 'valid', 'current', 'key', 'next', 'count')
+        );
+
+        $oxArticleList->expects($this->once())
+            ->method('setSqlLimit')
+            ->with($actPage * $perPage, $perPage);
+
+        $oxArticle_1 = $this->generateArticleMock(
+            array(),
+            'ARTICLE_1',
+            'Article 1',
+            'http://dummy.url/icon_1',
+            'Description 1',
+            1
+        );
+
+        $oxArticleList = $this->mockIterator(
+            $oxArticleList,
+            array(
+                 $oxArticle_1
+            )
+        );
+
+        oxUtilsObject::setClassInstance('oxArticleList', $oxArticleList);
+
+        $oCushy->getArticleList();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $articleList  = $ajaxResponse['result'];
+
+        $this->assertEquals(
+            $expectedArticleList,
+            $articleList
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticle()
+    {
+        $currencySign = $actShopCurrencyObject = $this->getOxConfig()
+            ->getActShopCurrencyObject()
+            ->sign;
+
+        $expectedArticle = array (
+            'productId'         => 'ARTICLE_1',
+            'title'             => 'Article 1',
+            'shortDesc'         => 'Description 1',
+            'price'             => 1,
+            'currency'          => $currencySign,
+            'formattedPrice'    => '1 ' . $currencySign,
+            'icon'              => 'http://dummy.url/icon_1',
+            'longDesc'          => 'Long Description 1',
+            'link'              => 'http://link-to-article.de/1',
+            'hasVariants'       => false,
+            'variantGroupCount' => 0
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', 'ARTICLE_1');
+
+        $oxArticle = $this->generateArticleMock(
+            array('load'),
+            $expectedArticle['productId'],
+            $expectedArticle['title'],
+            $expectedArticle['icon'],
+            $expectedArticle['shortDesc'],
+            $expectedArticle['price'],
+            $expectedArticle['longDesc'],
+            $expectedArticle['link'],
+            null,
+            $expectedArticle['variantGroupCount']
+        );
+
+        $oxArticle->expects($this->any())
+            ->method('load')
+            ->with('ARTICLE_1')
+            ->will($this->returnValue(true));
+
+        oxUtilsObject::setClassInstance('oxArticle', $oxArticle);
+
+        $oCushy->getArticle();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $article  = $ajaxResponse['result'];
+
+        $this->assertEquals(
+            $expectedArticle,
+            $article
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleThatDoesNotExist()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('iDoNotExist'));
+        $oCushy->getArticle();
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'article not found',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleWithIdNotProvided()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getArticle();
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'article not found',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleVariantGroups()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('ARTICLE_1'));
+
+        $oxArticle = $this->generateArticleMock(
+            array('getVariantSelections', 'load'),
+            'ARTICLE_1',
+            'Article 1',
+            'http://dummy.url/icon_1',
+            'Description 1',
+            1,
+            'Long Description 1',
+            'http://link-to-article.de/1',
+            null,
+            1
+        );
+
+        $oxVariantSelectList = $this->getMock(
+            'oxVariantSelectList',
+            array('getLabel'),
+            array(),
+            '',
+            false
+        );
+
+        $oxVariantSelectList->expects($this->once())
+            ->method('getLabel')
+            ->will($this->returnValue('Choose color'));
+
+        $oxArticle->expects($this->once())
+            ->method('load')
+            ->with(new oxField('ARTICLE_1'))
+            ->will($this->returnValue(true));
+
+        $oxArticle->expects($this->once())
+            ->method('getVariantSelections')
+            ->will($this->returnValue(
+                   array('selections' => array($oxVariantSelectList))
+                ));
+
+        oxUtilsObject::setClassInstance('oxArticle', $oxArticle);
+
+        $oCushy->getArticleVariantGroups();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            array(
+                 array(
+                    'groupId' => 0,
+                    'title'   => 'Choose color'
+                )
+            ),
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleVariantGroupsWithNoArticleSpecified()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getArticleVariantGroups();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'article id not provided',
+            $ajaxResponse['error']
         );
     }
 

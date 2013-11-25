@@ -233,16 +233,12 @@ class cushymoco extends oxUBase
             $aLayerClasses[] = $oEntry->getFilename();
         }
 
-        if (count($aLayerClasses) == 0) {
-            throw new Exception("Can't find any shop version layer.");
-        }
-
         natsort($aLayerClasses);
 
         do {
             $sLayerClassFile = array_pop($aLayerClasses);
             if ($sLayerClassFile === null) {
-                throw new Exception("Can't find suitable version layer class for your shop.");
+                throw new Exception("Can't find any suitable version layer class for your shop.");
             }
         } while (strnatcmp($sMaxVersionLayerFile, $sLayerClassFile) < 0);
 
@@ -712,18 +708,18 @@ class cushymoco extends oxUBase
         /**
          * @var oxVariantSelectList $oVariantSelectList
          */
-        $oProduct = $this->_getArticleById();
+        if (false !== $oProduct = $this->_getArticleById()) {
+            $aCharacteristics   = array();
+            $aVariantSelections = $oProduct->getVariantSelections();
+            foreach ($aVariantSelections['selections'] as $iIndex => $oVariantSelectList) {
+                $aCharacteristics[] = array(
+                    'groupId' => $iIndex,
+                    'title'   => $oVariantSelectList->getLabel(),
+                );
+            }
 
-        $aCharacteristics   = array();
-        $aVariantSelections = $oProduct->getVariantSelections();
-        foreach ($aVariantSelections['selections'] as $iIndex => $oVariantSelectList) {
-            $aCharacteristics[] = array(
-                'groupId' => $iIndex,
-                'title'   => $oVariantSelectList->getLabel(),
-            );
+            $this->_sAjaxResponse = $this->_successMessage($aCharacteristics);
         }
-
-        $this->_sAjaxResponse = $this->_successMessage($aCharacteristics);
     }
 
     /**
@@ -738,6 +734,7 @@ class cushymoco extends oxUBase
             $aProductResponse     = $this->_articleToArray($oArticle);
             $this->_sAjaxResponse = $this->_successMessage($aProductResponse);
         } else {
+            // TODO: use translation
             $this->_sAjaxResponse = $this->_errorMessage('article not found');
         }
     }
@@ -755,8 +752,12 @@ class cushymoco extends oxUBase
          * @var oxVariantSelectList $oVariantSelectionList
          */
         $oArticle          = $this->_getArticleById();
-        $aSelectedVariants = $this->_oVersionLayer->getRequestParam('selectedVariant', array());
-        $aVariants         = $oArticle->getVariantSelections($aSelectedVariants, $oArticle->getId());
+        $aSelectedVariants = $this->_oVersionLayer
+            ->getRequestParam('selectedVariant', array());
+        $aVariants         = $oArticle->getVariantSelections(
+            $aSelectedVariants,
+            $oArticle->getId()
+        );
         $aRealVariants     = array();
         foreach ($aVariants['selections'] as $iKey => $sVariantId) {
             $oVariantSelectionList = $aVariants['selections'][$iKey];
@@ -816,6 +817,7 @@ class cushymoco extends oxUBase
      */
     public function getArticleList()
     {
+        /** @var oxArticleList $oArtList */
         $oArtList = oxNew('oxarticlelist');
         $perpage  = $this->_oVersionLayer->getConfig()->getConfigParam('iNrofCatArticles');
         $page     = $this->getActPage();
@@ -847,7 +849,8 @@ class cushymoco extends oxUBase
          */
         $sCatId = $this->_oVersionLayer->getRequestParam('cnid');
         if ($sCatId === null) {
-            $this->_errorMessage('Category ID not given!');
+            $this->_sAjaxResponse = $this->_errorMessage('Category ID not given!');
+            return false;
         }
 
         $oCategory = oxNew('oxCategory');

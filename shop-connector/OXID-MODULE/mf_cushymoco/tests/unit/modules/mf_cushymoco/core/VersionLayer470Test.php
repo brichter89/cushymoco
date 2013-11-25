@@ -124,19 +124,22 @@ class Unit_Modules_mf_cushymoco_Core_VersionLayer470Test extends CushymocoTestCa
      */
     public function testGetRequestParamRaw()
     {
-        $this->markTestSkipped(
-            'Raw value can\'t be retrieved due to wrong implementation of modConfig::getParameter()'
-        );
-
         $raw = true;
 
-        $paramValue = 'someRandomValue-' . rand();
+        $paramValue = 'someRandomValue->' . rand();
         $this->setRequestParam('testParam', new oxField($paramValue));
+
+        // trick oxconfig::getRequestParameter() to skip the if(defined('OXID_PHP_UNIT')) block
+        $originalUnitMOD = modConfig::$unitMOD;
+        modConfig::$unitMOD = null;
+        $_POST['testParam'] = $paramValue;
 
         $this->assertSame(
             $paramValue,
             $this->versionLayer->getRequestParam('testParam', null, $raw)
         );
+
+        modConfig::$unitMOD = $originalUnitMOD;
     }
 
     /**
