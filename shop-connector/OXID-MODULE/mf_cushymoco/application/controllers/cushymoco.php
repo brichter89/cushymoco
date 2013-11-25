@@ -751,30 +751,31 @@ class cushymoco extends oxUBase
          * @var oxSelection         $oVariantSelectionItem
          * @var oxVariantSelectList $oVariantSelectionList
          */
-        $oArticle          = $this->_getArticleById();
-        $aSelectedVariants = $this->_oVersionLayer
-            ->getRequestParam('selectedVariant', array());
-        $aVariants         = $oArticle->getVariantSelections(
-            $aSelectedVariants,
-            $oArticle->getId()
-        );
-        $aRealVariants     = array();
-        foreach ($aVariants['selections'] as $iKey => $sVariantId) {
-            $oVariantSelectionList = $aVariants['selections'][$iKey];
-            $aVariantSelectionList = $oVariantSelectionList->getSelections();
+        if (false !== $oArticle = $this->_getArticleById()) {
+            $aSelectedVariants = $this->_oVersionLayer
+                ->getRequestParam('selectedVariant', array());
+            $aVariants         = $oArticle->getVariantSelections(
+                $aSelectedVariants,
+                $oArticle->getId()
+            );
+            $aRealVariants     = array();
+            foreach ($aVariants['selections'] as $iKey => $sVariantId) {
+                $oVariantSelectionList = $aVariants['selections'][$iKey];
+                $aVariantSelectionList = $oVariantSelectionList->getSelections();
 
-            foreach ($aVariantSelectionList as $oVariantSelectionItem) {
-                if (!$oVariantSelectionItem->isDisabled()) {
-                    $aRealVariants[] = array(
-                        'groupId'   => $iKey,
-                        'variantId' => $oVariantSelectionItem->getValue(),
-                        'title'     => $oVariantSelectionItem->getName(),
-                    );
+                foreach ($aVariantSelectionList as $oVariantSelectionItem) {
+                    if (!$oVariantSelectionItem->isDisabled()) {
+                        $aRealVariants[] = array(
+                            'groupId'   => $iKey,
+                            'variantId' => $oVariantSelectionItem->getValue(),
+                            'title'     => $oVariantSelectionItem->getName(),
+                        );
+                    }
                 }
             }
-        }
 
-        $this->_sAjaxResponse = $this->_successMessage($aRealVariants);
+            $this->_sAjaxResponse = $this->_successMessage($aRealVariants);
+        }
     }
 
     /**
@@ -785,27 +786,28 @@ class cushymoco extends oxUBase
      */
     public function getVariantProductId()
     {
-        $oArticle           = $this->_getArticleById();
-        $aSelectedVariants  = $this->_oVersionLayer->getRequestParam('selectedVariant', array());
-        $aVariants          = $oArticle->getVariantSelections($aSelectedVariants, $oArticle->getId());
-        $sSelectedProductId = '';
-        foreach ($aVariants['rawselections'] as $sOXID => $aVariants) {
-            $blSelected = true;
-            foreach ($aVariants as $iKey => $aVariant) {
-                if ($aVariant['disabled']) {
-                    $blSelected = false;
+        if (false !== $oArticle = $this->_getArticleById()) {
+            $aSelectedVariants  = $this->_oVersionLayer->getRequestParam('selectedVariant', array());
+            $aVariants          = $oArticle->getVariantSelections($aSelectedVariants, $oArticle->getId());
+            $sSelectedProductId = '';
+            foreach ($aVariants['rawselections'] as $sOXID => $aVariants) {
+                $blSelected = true;
+                foreach ($aVariants as $iKey => $aVariant) {
+                    if ($aVariant['disabled']) {
+                        $blSelected = false;
+                        break;
+                    }
+                    $blSelected = ($aVariant['hash'] == $aSelectedVariants[$iKey]);
+                }
+
+                if ($blSelected) {
+                    $sSelectedProductId = $sOXID;
                     break;
                 }
-                $blSelected = ($aVariant['hash'] == $aSelectedVariants[$iKey]);
             }
 
-            if ($blSelected) {
-                $sSelectedProductId = $sOXID;
-                break;
-            }
+            $this->_sAjaxResponse = $this->_successMessage($sSelectedProductId);
         }
-
-        $this->_sAjaxResponse = $this->_successMessage($sSelectedProductId);
     }
 
     /**

@@ -832,4 +832,69 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testGetArticleVariantsWithNoArticleSpecified()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getArticleVariants();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'article id not provided',
+            $ajaxResponse['error']
+        );
+    }
+
+
+
+    /**
+     *
+     */
+    public function testGetVariantProductId()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
+        $this->setRequestParam(
+            'selectedVariant',
+            array(
+                 'c2ba09fb91c16482ea1e981354e7fef7',
+                 '560173ba980b9f5f7f8d9d3cce1c2446'
+            )
+        );
+
+        $oCushy->getVariantProductId();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            '6b66f538ede23a41f0598a3bc38e8b52',
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetVariantProductIdWithNoArticleSpecified()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getVariantProductId();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'article id not provided',
+            $ajaxResponse['error']
+        );
+    }
+
 }
