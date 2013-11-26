@@ -339,6 +339,8 @@ class cushymoco extends oxUBase
         $sArticleId = $this->_oVersionLayer->getRequestParam($key);
         if (empty($sArticleId)) {
             $this->_sAjaxResponse = $this->_errorMessage("article id not provided");
+            // @TODO: maybe better throw exception to prevent calling methods on non object?
+            //throw new \Exception('article id not provided');
         } else {
             $oArticle = oxNew('oxarticle');
 
@@ -947,18 +949,19 @@ class cushymoco extends oxUBase
         /**
          * @var oxarticle $oArticle
          */
-        $oArticle = $this->_getArticleById();
-        $aMedia   = $oArticle->getMediaUrls();
-        $response = array();
-        foreach ($aMedia as $medium) {
-            $response[] = array(
-                'id'     => $medium->oxmediaurls__oxid->value,
-                'url'    => $medium->oxmediaurls__oxurl->value,
-                'desc'   => $medium->oxmediaurls__oxdesc->value,
-                'upload' => $medium->oxmediaurls__oxisuploaded->value,
-            );
+        if (false !== $oArticle = $this->_getArticleById()) {
+            $aMedia   = $oArticle->getMediaUrls();
+            $response = array();
+            foreach ($aMedia as $medium) {
+                $response[] = array(
+                    'id'     => $medium->oxmediaurls__oxid->value,
+                    'url'    => $medium->oxmediaurls__oxurl->value,
+                    'desc'   => $medium->oxmediaurls__oxdesc->value,
+                    'upload' => $medium->oxmediaurls__oxisuploaded->value,
+                );
+            }
+            $this->_sAjaxResponse = $this->_successMessage($response);
         }
-        $this->_sAjaxResponse = $this->_successMessage($response);
     }
 
     /**

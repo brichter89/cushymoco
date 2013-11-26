@@ -436,7 +436,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleList()
     {
-        $currencySign = $actShopCurrencyObject = $this->getOxConfig()
+        $currencySign = $this->getOxConfig()
             ->getActShopCurrencyObject()
             ->sign;
 
@@ -522,7 +522,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         $oCushy = new cushymoco();
         $oCushy->init();
 
-        $this->setRequestParam('anid', 'ARTICLE_1');
+        $this->setRequestParam('anid', new oxField('ARTICLE_1'));
 
         $oxArticle = $this->generateArticleMock(
             array('load'),
@@ -539,7 +539,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         $oxArticle->expects($this->any())
             ->method('load')
-            ->with('ARTICLE_1')
+            ->with(new oxField('ARTICLE_1'))
             ->will($this->returnValue(true));
 
         oxUtilsObject::setClassInstance('oxArticle', $oxArticle);
@@ -888,6 +888,100 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         $oCushy->init();
 
         $oCushy->getVariantProductId();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'article id not provided',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleMedia()
+    {
+        $oxMedia1 = $this->getMock('oxMediaUrl', null, array(), '', false);
+        $oxMedia1->oxmediaurls__oxid         = new oxField('MEDIA_1');
+        $oxMedia1->oxmediaurls__oxurl        = new oxField('http://example.url/media1');
+        $oxMedia1->oxmediaurls__oxdesc       = new oxField('Media 01');
+        $oxMedia1->oxmediaurls__oxisuploaded = new oxField(true);
+
+        $oxMedia2 = $this->getMock('oxMediaUrl', null, array(), '', false);
+        $oxMedia2->oxmediaurls__oxid         = new oxField('MEDIA_2');
+        $oxMedia2->oxmediaurls__oxurl        = new oxField('http://example.url/media2');
+        $oxMedia2->oxmediaurls__oxdesc       = new oxField('Media 02');
+        $oxMedia2->oxmediaurls__oxisuploaded = new oxField(false);
+
+
+        $oxList = $this->getMock(
+            'oxList',
+            array('rewind', 'valid', 'current', 'key', 'next', 'count')
+        );
+        $oxList = $this->mockIterator(
+            $oxList,
+            array(
+                 $oxMedia1,
+                 $oxMedia2
+            )
+        );
+
+        $oxArticle = $this->generateArticleMock(
+            array('load', 'getMediaUrls'),
+            'MyMediaArticle',
+            'My Media Article',
+            'http://example.url/icon',
+            'Mock Article with media Urls',
+            12
+        );
+        $oxArticle->expects($this->once())
+            ->method('load')
+            ->with(new oxField('MyMediaArticle'))
+            ->will($this->returnValue(true));
+        $oxArticle->expects($this->any())
+            ->method('getMediaUrls')
+            ->will($this->returnValue($oxList));
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('MyMediaArticle'));
+
+        oxUtilsObject::setClassInstance('oxArticle', $oxArticle);
+
+        $oCushy->getArticleMedia();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            array(
+                 array(
+                     'id'     => 'MEDIA_1',
+                     'url'    => 'http://example.url/media1',
+                     'desc'   => 'Media 01',
+                     'upload' => true
+                 ),
+                 array(
+                     'id'     => 'MEDIA_2',
+                     'url'    => 'http://example.url/media2',
+                     'desc'   => 'Media 02',
+                     'upload' => false
+                 )
+            ),
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleMediaWithNoArticleSpecified()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getArticleMedia();
 
         $ajaxResponse = $this->getAjaxResponseValue($oCushy);
 
