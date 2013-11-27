@@ -973,21 +973,22 @@ class cushymoco extends oxUBase
      */
     public function getArticleImages()
     {
-        $oArticle  = $this->_getArticleById();
-        $aGallery  = $oArticle->getPictureGallery();
-        $aPictures = array();
+        if (false !== $oArticle  = $this->_getArticleById()) {
+            $aGallery  = $oArticle->getPictureGallery();
+            $aPictures = array();
 
-        foreach ($aGallery['Pics'] as $iKey => $sPictureUrl) {
-            $aPictures[] = array(
-                'productId' => $oArticle->getId(),
-                'pictureId' => $iKey,
-                'icon'      => $aGallery['Icons'][$iKey],
-                'image'     => $sPictureUrl,
-                'bigImage'  => $aGallery['ZoomPic'] ? $aGallery['ZoomPics'][$iKey]['file'] : '',
-            );
+            foreach ($aGallery['Pics'] as $iKey => $sPictureUrl) {
+                $aPictures[] = array(
+                    'productId' => $oArticle->getId(),
+                    'pictureId' => $iKey,
+                    'icon'      => $aGallery['Icons'][$iKey],
+                    'image'     => $sPictureUrl,
+                    'bigImage'  => $aGallery['ZoomPic'] ? $aGallery['ZoomPics'][$iKey]['file'] : '',
+                );
+            }
+
+            $this->_sAjaxResponse = $this->_successMessage($aPictures);
         }
-
-        $this->_sAjaxResponse = $this->_successMessage($aPictures);
     }
 
     public function getArticleDocuments()

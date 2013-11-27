@@ -991,4 +991,73 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testGetArticleImages()
+    {
+        $expected = array(
+            array(
+                'productId' => '943ed656e21971fb2f1827facbba9bec',
+                'pictureId' => 1,
+                'icon'      => 'http://localhost/out/pictures/generated/product/1/87_87_75/front_z1.jpg',
+                'image'     => 'http://localhost/out/pictures/generated/product/1/380_340_75/front_z1.jpg',
+                'bigImage'  => 'http://localhost/out/pictures/generated/product/1/665_665_75/front_z1.jpg',
+            ),
+            array(
+                'productId' => '943ed656e21971fb2f1827facbba9bec',
+                'pictureId' => 2,
+                'icon'      => 'http://localhost/out/pictures/generated/product/2/87_87_75/back_z2.jpg',
+                'image'     => 'http://localhost/out/pictures/generated/product/2/380_340_75/back_z2.jpg',
+                'bigImage'  => 'http://localhost/out/pictures/generated/product/2/665_665_75/back_z2.jpg',
+            ),
+            array(
+                'productId' => '943ed656e21971fb2f1827facbba9bec',
+                'pictureId' => 3,
+                'icon'      => 'http://localhost/out/pictures/generated/product/3/87_87_75/detail1_z3.jpg',
+                'image'     => 'http://localhost/out/pictures/generated/product/3/380_340_75/detail1_z3.jpg',
+                'bigImage'  => 'http://localhost/out/pictures/generated/product/3/665_665_75/detail1_z3.jpg',
+            ),
+            array(
+                'productId' => '943ed656e21971fb2f1827facbba9bec',
+                'pictureId' => 4,
+                'icon'      => 'http://localhost/out/pictures/generated/product/4/87_87_75/detail2_z4.jpg',
+                'image'     => 'http://localhost/out/pictures/generated/product/4/380_340_75/detail2_z4.jpg',
+                'bigImage'  => 'http://localhost/out/pictures/generated/product/4/665_665_75/detail2_z4.jpg',
+            ),
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('anid', new oxField('943ed656e21971fb2f1827facbba9bec'));
+
+        $oCushy->getArticleImages();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleImagesWithNoArticleSpecified()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getArticleImages();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'article id not provided',
+            $ajaxResponse['error']
+        );
+    }
+
 }
