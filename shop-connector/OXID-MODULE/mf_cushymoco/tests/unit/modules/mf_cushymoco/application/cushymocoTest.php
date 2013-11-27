@@ -1060,4 +1060,40 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testGetArticleDocumentsIsNotImplemented()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getArticleDocuments();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'NOT_IMPLEMENTED',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetArticleVideosIsNotImplemented()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getArticleVideos();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'NOT_IMPLEMENTED',
+            $ajaxResponse['error']
+        );
+    }
+
 }
