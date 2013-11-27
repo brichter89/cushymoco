@@ -1254,4 +1254,86 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 //        );
     }
 
+    /**
+     *
+     */
+    public function testGetContent()
+    {
+        $expected = array(
+            array(
+                'contentId' => 'oxagb',
+                'title'     => 'AGB',
+            ),
+            array(
+                'contentId' => 'oximpressum',
+                'title'     => 'Impressum',
+            ),
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getContent();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetContentOfContentId()
+    {
+        $expected = array(
+            'title'   => 'AGB',
+            'content' => "<div><strong>AGB</strong></div>\r\n<div><strong>&nbsp;</strong></div>\r\n<div>F�gen Sie hier Ihre allgemeinen Gesch�ftsbedingungen ein:</div>\r\n<div>&nbsp;</div>\r\n<div><span style=\"font-weight: bold\">Strukturvorschlag:</span><br>\r\n<br>\r\n<ol>\r\n<li>Geltungsbereich </li>\r\n<li>Vertragspartner </li>\r\n<li>Angebot und Vertragsschluss </li>\r\n<li>Widerrufsrecht, Widerrufsbelehrung, Widerrufsfolgen </li>\r\n<li>Preise und Versandkosten </li>\r\n<li>Lieferung </li>\r\n<li>Zahlung </li>\r\n<li>Eigentumsvorbehalt </li>\r\n<li>Gew�hrleistung </li>\r\n<li>Weitere Informationen</li></ol></div>",
+            'cnid'    => 'oxagb',
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('cnid', new oxField('oxagb'));
+
+        $oCushy->getContent();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetContentOfContentIdInDifferentLanguage()
+    {
+        $expected = array(
+            'title'   => 'Terms and Conditions',
+            'content' => 'Insert your terms and conditions here.',
+            'cnid'    => 'oxagb',
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('cnid', new oxField('oxagb'));
+        $this->setRequestParam('lid', 1);
+
+        $oCushy->getContent();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+
 }

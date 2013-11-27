@@ -420,10 +420,10 @@ class cushymoco extends oxUBase
         $sShopId    = $this->_oVersionLayer->getRequestParam('shp');
 
         if (empty($sContentId)) {
-            $aResult = $this->getMobileContentList($iLangId, $sShopId);
+            $aResult = $this->_getMobileContentList($iLangId, $sShopId);
         } else {
             // Oxid chooses shop on it's own
-            $aResult = $this->getMobileContent($sContentId, $iLangId);
+            $aResult = $this->_getMobileContent($sContentId, $iLangId);
         }
 
         $this->_sAjaxResponse = $this->_successMessage($aResult);
@@ -437,7 +437,7 @@ class cushymoco extends oxUBase
      *
      * @return array
      */
-    protected function getMobileContent($sContentId, $iLangId = null)
+    protected function _getMobileContent($sContentId, $iLangId = null)
     {
         $oContent = oxNew('oxcontent');
         $oContent->setLanguage($iLangId);
@@ -459,7 +459,7 @@ class cushymoco extends oxUBase
      *
      * @return array
      */
-    protected function getMobileContentList($iLangId = null, $sShopId = null)
+    protected function _getMobileContentList($iLangId = null, $sShopId = null)
     {
         if (empty($sShopId)) {
             $sEdition = $this->getShopEdition();
