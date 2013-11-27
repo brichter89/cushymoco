@@ -1096,4 +1096,162 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testSearchProductsByName()
+    {
+        $expected = array(
+            'count'    => 5,
+            'articles' => array(
+                '531b537118f5f4d7a427cdb825440922' => array(
+                    'id'    => '531b537118f5f4d7a427cdb825440922',
+                    'title' => 'Kuyichi Jeans Anna',
+                    'short' => '',
+                    'price' => 99.9,
+                ),
+                '531f91d4ab8bfb24c4d04e473d246d0b' => array(
+                    'id'    => '531f91d4ab8bfb24c4d04e473d246d0b',
+                    'title' => 'Kuyichi Jeans Cole',
+                    'short' => '',
+                    'price' => 89.9,
+                ),
+                '6b63456b3abeeeccd9b085a76ffba1a3' => array(
+                    'id'    => '6b63456b3abeeeccd9b085a76ffba1a3',
+                    'title' => 'Kuyichi Jeans Candy',
+                    'short' => '',
+                    'price' => 89.9,
+                ),
+                '6b66d82af984e5ad46b9cb27b1ef8aae' => array(
+                    'id'    => '6b66d82af984e5ad46b9cb27b1ef8aae',
+                    'title' => 'Kuyichi Jeans Sugar',
+                    'short' => '',
+                    'price' => 89.9,
+                ),
+                '943ed656e21971fb2f1827facbba9bec' => array(
+                    'id'    => '943ed656e21971fb2f1827facbba9bec',
+                    'title' => 'Kuyichi Jeans Mick',
+                    'short' => '',
+                    'price' => 109,
+                )
+            )
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('searchparam', new oxField('jeans'));
+
+        $oCushy->searchProducts();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+    
+    /**
+     *
+     */
+    public function testSearchProductsByArticleNumber()
+    {
+        $expected = array(
+            'count'    => 1,
+            'articles' => array(
+                1951 => array(
+                    'id'    => 1951,
+                    'title' => 'Wanduhr BIKINI GIRL',
+                    'short' => '',
+                    'price' => 14,
+                ),
+            ),
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('searchparam', new oxField(1951));
+
+        $oCushy->searchProducts();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testSearchProductsInCategory()
+    {
+        $expected = array(
+            'count'    => 3,
+            'articles' => array(
+                '531b537118f5f4d7a427cdb825440922' => array(
+                    'id'    => '531b537118f5f4d7a427cdb825440922',
+                    'title' => 'Kuyichi Jeans Anna',
+                    'short' => '',
+                    'price' => 99.9,
+                ),
+                '6b63456b3abeeeccd9b085a76ffba1a3' => array(
+                    'id'    => '6b63456b3abeeeccd9b085a76ffba1a3',
+                    'title' => 'Kuyichi Jeans Candy',
+                    'short' => '',
+                    'price' => 89.9,
+                ),
+                '6b66d82af984e5ad46b9cb27b1ef8aae' => array(
+                    'id'    => '6b66d82af984e5ad46b9cb27b1ef8aae',
+                    'title' => 'Kuyichi Jeans Sugar',
+                    'short' => '',
+                    'price' => 89.9,
+                ),
+            ),
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('searchparam', new oxField('jeans'));
+        $this->setRequestParam('searchcnid', new oxField('94342f1d6f3b6fe9f1520d871f566511'));
+
+        $oCushy->searchProducts();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testSearchProductsByVendor()
+    {
+        $this->markTestIncomplete('How to search for vendor?');
+
+//        $expected = array();
+//
+//        $oCushy = new cushymoco();
+//        $oCushy->init();
+//
+//        $this->setRequestParam('searchparam', new oxField('jeans'));
+//        $this->setRequestParam('searchcnid', new oxField('kuichi'));
+//
+//        $oCushy->searchProducts();
+//
+//        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+//
+//        $this->assertEquals(
+//            $expected,
+//            $ajaxResponse['result']
+//        );
+    }
+
 }
