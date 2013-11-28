@@ -249,6 +249,149 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
     /**
      *
      */
+    public function testGetAccountData()
+    {
+        $expected = array(
+            'user'     => array(
+                'username'     => 'admin@dummy.url',
+                'firstname'    => 'John',
+                'lastname'     => 'Doe',
+                'customerNo'   => 1,
+                'company'      => 'Your Company Name',
+                'phone'        => '217-8918712',
+                'fax'          => '217-8918713',
+                'privatePhone' => '',
+                'mobile'       => '',
+            ),
+            'billing'  => array(
+                'street'     => 'Maple Street',
+                'streetNo'   => 2425,
+                'additional' => '',
+                'city'       => 'Any City',
+                'zip'        => 9041,
+                'state'      => '',
+                'country'    => 'Deutschland',
+            ),
+            'shipping' => array(
+                array(
+                    'firstName'  => 'John',
+                    'lastName'   => 'Doe',
+                    'company'    => 'Your Company Name',
+                    'street'     => 'Maple Street',
+                    'streetNo'   => 2425,
+                    'additional' => '',
+                    'city'       => 'Any City',
+                    'zip'        => 9041,
+                    'country'    => 'Deutschland',
+                    'state'      => '',
+                    'phone'      => '217-8918712',
+                    'fax'        => '217-8918713',
+                ),
+                array(
+                    'firstName'  => 'Jane',
+                    'lastName'   => 'Doe',
+                    'company'    => 'Another Company Name',
+                    'street'     => 'Foo Street',
+                    'streetNo'   => 1234,
+                    'additional' => 'a',
+                    'city'       => 'Some Other City',
+                    'zip'        => 9001,
+                    'country'    => 'Kanada',
+                    'state'      => 'Prince Edward Island',
+                    'phone'      => '257-2948210',
+                    'fax'        => '257-2948211',
+                )
+            ),
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
+        $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
+        $oCushy->login();
+
+        $oxAddress1 = oxNew('oxAddress');
+        $oxAddress1->oxaddress__oxfname     = new oxField($expected['shipping'][0]['firstName']);
+        $oxAddress1->oxaddress__oxlname     = new oxField($expected['shipping'][0]['lastName']);
+        $oxAddress1->oxaddress__oxcompany   = new oxField($expected['shipping'][0]['company']);
+        $oxAddress1->oxaddress__oxstreet    = new oxField($expected['shipping'][0]['street']);
+        $oxAddress1->oxaddress__oxstreetnr  = new oxField($expected['shipping'][0]['streetNo']);
+        $oxAddress1->oxaddress__oxaddinfo   = new oxField($expected['shipping'][0]['additional']);
+        $oxAddress1->oxaddress__oxcity      = new oxField($expected['shipping'][0]['city']);
+        $oxAddress1->oxaddress__oxzip       = new oxField($expected['shipping'][0]['zip']);
+        $oxAddress1->oxaddress__oxcountryid = new oxField('a7c40f631fc920687.20179984');
+        $oxAddress1->oxaddress__oxfon       = new oxField($expected['shipping'][0]['phone']);
+        $oxAddress1->oxaddress__oxfax       = new oxField($expected['shipping'][0]['fax']);
+
+        $oxAddress2 = oxNew('oxAddress');
+        $oxAddress2->oxaddress__oxfname     = new oxField($expected['shipping'][1]['firstName']);
+        $oxAddress2->oxaddress__oxlname     = new oxField($expected['shipping'][1]['lastName']);
+        $oxAddress2->oxaddress__oxcompany   = new oxField($expected['shipping'][1]['company']);
+        $oxAddress2->oxaddress__oxstreet    = new oxField($expected['shipping'][1]['street']);
+        $oxAddress2->oxaddress__oxstreetnr  = new oxField($expected['shipping'][1]['streetNo']);
+        $oxAddress2->oxaddress__oxaddinfo   = new oxField($expected['shipping'][1]['additional']);
+        $oxAddress2->oxaddress__oxcity      = new oxField($expected['shipping'][1]['city']);
+        $oxAddress2->oxaddress__oxzip       = new oxField($expected['shipping'][1]['zip']);
+        $oxAddress2->oxaddress__oxcountryid = new oxField('8f241f11095649d18.02676059');
+        $oxAddress2->oxaddress__oxstateid   = new oxField('PE');
+        $oxAddress2->oxaddress__oxfon       = new oxField($expected['shipping'][1]['phone']);
+        $oxAddress2->oxaddress__oxfax       = new oxField($expected['shipping'][1]['fax']);
+
+        $addresses = $this->getMock(
+            'oxList',
+            array('rewind', 'valid', 'current', 'key', 'next', 'count')
+        );
+        $addresses = $this->mockIterator(
+            $addresses,
+            array(
+                 $oxAddress1,
+                 $oxAddress2
+            )
+        );
+
+        $oxUser = $this->getMock('oxUser', array('getUserAddresses'));
+        $oxUser->expects($this->once())
+            ->method('getUserAddresses')
+            ->will($this->returnValue($addresses));
+        $oxUser->loadActiveUser();
+        // set admin username
+        $oxUser->oxuser__oxusername = new oxField($expected['user']['username']);
+
+        $this->getOxSession()->unitCustModUser = $oxUser;
+
+        $oCushy->getAccountData();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetAccountDataWhenUserNotLoggedIn()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getAccountData();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'user not logged on',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
     public function testGetCategoryTitle()
     {
         $oCushy = new cushymoco();
