@@ -194,6 +194,61 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
     /**
      *
      */
+    public function testGetUserData()
+    {
+        $expected = array(
+            'username'  => 'admin@dummy.url',
+            'firstname' => 'John',
+            'lastname'  => 'Doe',
+            'company'   => 'Your Company Name',
+        );
+
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
+        $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
+        $oCushy->login();
+
+        // Set admin username
+        $oxUser = oxNew( 'oxuser' );
+        $oxUser->loadActiveUser();
+        $oxUser->oxuser__oxusername = new oxField($expected['username']);
+
+        $this->getOxSession()->unitCustModUser = $oxUser;
+
+        $oCushy->getUserData();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $result = $ajaxResponse['result'];
+
+        $this->assertSame(
+            $expected,
+            $result
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGetUserDataWhenUserNotLoggedIn()
+    {
+        $oCushy = new cushymoco();
+        $oCushy->init();
+
+        $oCushy->getUserData();
+
+        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+
+        $this->assertSame(
+            'user not logged on',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
     public function testGetCategoryTitle()
     {
         $oCushy = new cushymoco();
