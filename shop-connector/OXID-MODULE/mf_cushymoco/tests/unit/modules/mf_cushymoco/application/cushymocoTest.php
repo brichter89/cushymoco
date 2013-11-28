@@ -2,17 +2,25 @@
 
 class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestCase {
 
+    /** @var  cushymoco $cushymoco */
+    protected $cushymoco;
+
+    /**
+     * @return null|void
+     */
+    public function setUp()
+    {
+        $this->cushymoco = new cushymoco();
+        $this->cushymoco->init();
+    }
     /**
      * Test if init method sets a custom exception handler.
      */
     public function testInitSetsExceptionHandler()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $oldExceptionHandler = set_exception_handler(array($this, 'dummy'));
         $this->assertSame(
-            array($oCushy, 'exceptionHandler'),
+            array($this->cushymoco, 'exceptionHandler'),
             $oldExceptionHandler
         );
     }
@@ -40,14 +48,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testExceptionHandler()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $sMessage = "I'm an exception! Yeah!";
         $exception = new \Exception($sMessage);
 
         ob_start();
-        $oCushy->exceptionHandler($exception);
+        $this->cushymoco->exceptionHandler($exception);
         $output = ob_get_clean();
 
         $sErrMessage = json_decode($output)->error;
@@ -63,12 +68,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testRenderReturnsTemplate()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->assertEquals(
             'cushymoco.tpl',
-            $oCushy->render()
+            $this->cushymoco->render()
         );
     }
 
@@ -79,14 +81,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
     {
         $expectedUserId = 'oxdefaultadmin';
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
         $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
 
-        $oCushy->login();
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $this->cushymoco->login();
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $oxSession = $this->getOxSession();
         $returnedUserId = $ajaxResponse['result']['userId'];
@@ -116,14 +115,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testLoginWithIncorrectCredentials($user, $pass)
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('lgn_usr', new oxField($user));
         $this->setRequestParam('lgn_pwd', new oxField($pass));
 
         ob_start();
-        $oCushy->login();
+        $this->cushymoco->login();
         $output = ob_get_clean();
 
         $sErrMessage = json_decode($output)->error;
@@ -152,14 +148,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testLoginWithEmptyCredentials($user, $pass)
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('lgn_usr', $user);
         $this->setRequestParam('lgn_pwd', $pass);
 
-        $oCushy->login();
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $this->cushymoco->login();
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $sErrMessage = $ajaxResponse['error'];
 
@@ -174,16 +167,13 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testLogout()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
         $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
 
-        $oCushy->login();
+        $this->cushymoco->login();
 
-        $oCushy->logout();
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $this->cushymoco->logout();
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $oxSession = $this->getOxSession();
         $this->assertNull($ajaxResponse['error']);
@@ -203,12 +193,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             'company'   => 'Your Company Name',
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
         $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
-        $oCushy->login();
+        $this->cushymoco->login();
 
         // Set admin username
         $oxUser = oxNew( 'oxuser' );
@@ -217,9 +204,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         $this->getOxSession()->unitCustModUser = $oxUser;
 
-        $oCushy->getUserData();
+        $this->cushymoco->getUserData();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
         $result = $ajaxResponse['result'];
 
         $this->assertSame(
@@ -233,12 +220,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetUserDataWhenUserNotLoggedIn()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getUserData();
 
-        $oCushy->getUserData();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'user not logged on',
@@ -304,12 +288,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             ),
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
         $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
-        $oCushy->login();
+        $this->cushymoco->login();
 
         $oxAddress1 = oxNew('oxAddress');
         $oxAddress1->oxaddress__oxfname     = new oxField($expected['shipping'][0]['firstName']);
@@ -360,9 +341,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         $this->getOxSession()->unitCustModUser = $oxUser;
 
-        $oCushy->getAccountData();
+        $this->cushymoco->getAccountData();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
 
         $this->assertEquals(
@@ -376,12 +357,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetAccountDataWhenUserNotLoggedIn()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getAccountData();
 
-        $oCushy->getAccountData();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'user not logged on',
@@ -394,9 +372,6 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetCategoryTitle()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $expectedTitle = "Category 1";
 
         $cnid = 'CATEGORY_1';
@@ -411,9 +386,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         oxUtilsObject::setClassInstance('oxCategory', $oxCategory1);
 
-        $oCushy->getCategoryTitle();
+        $this->cushymoco->getCategoryTitle();
 
-        $ajaxResponseValue = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponseValue = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             $expectedTitle,
@@ -426,12 +401,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetCategoryTitleWithNoCategoryId()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getCategoryTitle();
 
-        $oCushy->getCategoryTitle();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'Category ID not given!',
@@ -458,9 +430,6 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
                 'hasChild'   => false
             )
         );
-
-        $oCushy = new cushymoco();
-        $oCushy->init();
 
         $oxCategory_1 = $this->generateCategoryMock(
             array(),
@@ -519,9 +488,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         oxUtilsObject::setClassInstance('oxCategoryList', $oxCategoryList);
 
 
-        $oCushy->getCategoryList();
+        $this->cushymoco->getCategoryList();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
         $categoryList = $ajaxResponse['result'];
 
         $this->assertEquals(
@@ -543,9 +512,6 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
                 'hasChild'   => false
             )
         );
-
-        $oCushy = new cushymoco();
-        $oCushy->init();
 
         // This should not be displayed because it is a top level category
         $oxCategory_1 = $this->generateCategoryMock(
@@ -618,9 +584,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         $this->setRequestParam('cnid', new oxField('CATEGORY_1'));
 
-        $oCushy->getCategoryList();
+        $this->cushymoco->getCategoryList();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
         $categoryList = $ajaxResponse['result'];
 
         $this->assertEquals(
@@ -649,9 +615,6 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
                 'icon' => 'http://dummy.url/icon_1',
             )
         );
-
-        $oCushy = new cushymoco();
-        $oCushy->init();
 
         $actPage = 0;
         $perPage = $this->getConfig()->getConfigParam('iNrofCatArticles');
@@ -683,9 +646,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         oxUtilsObject::setClassInstance('oxArticleList', $oxArticleList);
 
-        $oCushy->getArticleList();
+        $this->cushymoco->getArticleList();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
         $articleList  = $ajaxResponse['result'];
 
         $this->assertEquals(
@@ -717,9 +680,6 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             'variantGroupCount' => 0
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('ARTICLE_1'));
 
         $oxArticle = $this->generateArticleMock(
@@ -742,9 +702,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         oxUtilsObject::setClassInstance('oxArticle', $oxArticle);
 
-        $oCushy->getArticle();
+        $this->cushymoco->getArticle();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
         $article  = $ajaxResponse['result'];
 
         $this->assertEquals(
@@ -758,12 +718,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleThatDoesNotExist()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('iDoNotExist'));
-        $oCushy->getArticle();
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $this->cushymoco->getArticle();
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'article not found',
@@ -776,11 +733,8 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleWithIdNotProvided()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
-        $oCushy->getArticle();
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $this->cushymoco->getArticle();
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'article not found',
@@ -793,9 +747,6 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleVariantGroups()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('ARTICLE_1'));
 
         $oxArticle = $this->generateArticleMock(
@@ -836,9 +787,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
         oxUtilsObject::setClassInstance('oxArticle', $oxArticle);
 
-        $oCushy->getArticleVariantGroups();
+        $this->cushymoco->getArticleVariantGroups();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             array(
@@ -856,12 +807,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleVariantGroupsWithNoArticleSpecified()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getArticleVariantGroups();
 
-        $oCushy->getArticleVariantGroups();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'article id not provided',
@@ -912,14 +860,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             )
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
 
-        $oCushy->getArticleVariants();
+        $this->cushymoco->getArticleVariants();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             $expectedResult,
@@ -965,15 +910,12 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             )
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
         $this->setRequestParam('selectedVariant', array('5d4bc935f54e8f1f2cf08741638e1fcd'));
 
-        $oCushy->getArticleVariants();
+        $this->cushymoco->getArticleVariants();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             $expectedResult,
@@ -1014,15 +956,12 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             )
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
         $this->setRequestParam('selectedVariant', array('6f1979fb2d97601ca6f4dc09587dc9af'));
 
-        $oCushy->getArticleVariants();
+        $this->cushymoco->getArticleVariants();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             $expectedResult,
@@ -1035,12 +974,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleVariantsWithNoArticleSpecified()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getArticleVariants();
 
-        $oCushy->getArticleVariants();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'article id not provided',
@@ -1055,9 +991,6 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetVariantProductId()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('6b63456b3abeeeccd9b085a76ffba1a3'));
         $this->setRequestParam(
             'selectedVariant',
@@ -1067,9 +1000,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             )
         );
 
-        $oCushy->getVariantProductId();
+        $this->cushymoco->getVariantProductId();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             '6b66f538ede23a41f0598a3bc38e8b52',
@@ -1082,12 +1015,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetVariantProductIdWithNoArticleSpecified()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getVariantProductId();
 
-        $oCushy->getVariantProductId();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'article id not provided',
@@ -1141,16 +1071,13 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             ->method('getMediaUrls')
             ->will($this->returnValue($oxList));
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('MyMediaArticle'));
 
         oxUtilsObject::setClassInstance('oxArticle', $oxArticle);
 
-        $oCushy->getArticleMedia();
+        $this->cushymoco->getArticleMedia();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             array(
@@ -1176,12 +1103,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleMediaWithNoArticleSpecified()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getArticleMedia();
 
-        $oCushy->getArticleMedia();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'article id not provided',
@@ -1225,14 +1149,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             ),
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('anid', new oxField('943ed656e21971fb2f1827facbba9bec'));
 
-        $oCushy->getArticleImages();
+        $this->cushymoco->getArticleImages();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             $expected,
@@ -1245,12 +1166,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleImagesWithNoArticleSpecified()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getArticleImages();
 
-        $oCushy->getArticleImages();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'article id not provided',
@@ -1263,12 +1181,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleDocumentsIsNotImplemented()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getArticleDocuments();
 
-        $oCushy->getArticleDocuments();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'NOT_IMPLEMENTED',
@@ -1281,12 +1196,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleVideosIsNotImplemented()
     {
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getArticleVideos();
 
-        $oCushy->getArticleVideos();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertSame(
             'NOT_IMPLEMENTED',
@@ -1335,14 +1247,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             )
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('searchparam', new oxField('jeans'));
 
-        $oCushy->searchProducts();
+        $this->cushymoco->searchProducts();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             $expected,
@@ -1367,14 +1276,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             ),
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('searchparam', new oxField(1951));
 
-        $oCushy->searchProducts();
+        $this->cushymoco->searchProducts();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             $expected,
@@ -1411,15 +1317,12 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             ),
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('searchparam', new oxField('jeans'));
         $this->setRequestParam('searchcnid', new oxField('94342f1d6f3b6fe9f1520d871f566511'));
 
-        $oCushy->searchProducts();
+        $this->cushymoco->searchProducts();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             $expected,
@@ -1436,15 +1339,12 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
 
 //        $expected = array();
 //
-//        $oCushy = new cushymoco();
-//        $oCushy->init();
-//
 //        $this->setRequestParam('searchparam', new oxField('jeans'));
 //        $this->setRequestParam('searchcnid', new oxField('kuichi'));
 //
-//        $oCushy->searchProducts();
+//        $this->cushymoco->searchProducts();
 //
-//        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+//        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 //
 //        $this->assertEquals(
 //            $expected,
@@ -1468,12 +1368,9 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             ),
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
+        $this->cushymoco->getContent();
 
-        $oCushy->getContent();
-
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             $expected,
@@ -1492,14 +1389,11 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             'cnid'    => 'oxagb',
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('cnid', new oxField('oxagb'));
 
-        $oCushy->getContent();
+        $this->cushymoco->getContent();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             $expected,
@@ -1518,15 +1412,12 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             'cnid'    => 'oxagb',
         );
 
-        $oCushy = new cushymoco();
-        $oCushy->init();
-
         $this->setRequestParam('cnid', new oxField('oxagb'));
         $this->setRequestParam('lid', 1);
 
-        $oCushy->getContent();
+        $this->cushymoco->getContent();
 
-        $ajaxResponse = $this->getAjaxResponseValue($oCushy);
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
 
         $this->assertEquals(
             $expected,
