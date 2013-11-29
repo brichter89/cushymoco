@@ -167,10 +167,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testLogout()
     {
-        $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
-        $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
-
-        $this->cushymoco->login();
+        $this->loginAsAdmin();
 
         $this->cushymoco->logout();
         $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
@@ -193,9 +190,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             'company'   => 'Your Company Name',
         );
 
-        $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
-        $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
-        $this->cushymoco->login();
+        $this->loginAsAdmin();
 
         // Set admin username
         $oxUser = oxNew( 'oxuser' );
@@ -288,9 +283,7 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
             ),
         );
 
-        $this->setRequestParam('lgn_usr', new oxField(oxADMIN_LOGIN));
-        $this->setRequestParam('lgn_pwd', new oxField(oxADMIN_PASSWD));
-        $this->cushymoco->login();
+        $this->loginAsAdmin();
 
         $oxAddress1 = oxNew('oxAddress');
         $oxAddress1->oxaddress__oxfname     = new oxField($expected['shipping'][0]['firstName']);
@@ -600,18 +593,14 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticleList()
     {
-        $currencySign = $this->getOxConfig()
-            ->getActShopCurrencyObject()
-            ->sign;
-
         $expectedArticleList = array (
             array (
                 'productId' => 'ARTICLE_1',
                 'title' => 'Article 1',
                 'shortDesc' => 'Description 1',
                 'price' => 1,
-                'currency' => $currencySign,
-                'formattedPrice' => '1 ' . $currencySign,
+                'currency' => $this->getCurrencySign(),
+                'formattedPrice' => '1 ' . $this->getCurrencySign(),
                 'icon' => 'http://dummy.url/icon_1',
             )
         );
@@ -662,17 +651,13 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
      */
     public function testGetArticle()
     {
-        $currencySign = $actShopCurrencyObject = $this->getOxConfig()
-            ->getActShopCurrencyObject()
-            ->sign;
-
         $expectedArticle = array (
             'productId'         => 'ARTICLE_1',
             'title'             => 'Article 1',
             'shortDesc'         => 'Description 1',
             'price'             => 1,
-            'currency'          => $currencySign,
-            'formattedPrice'    => '1 ' . $currencySign,
+            'currency'          => $this->getCurrencySign(),
+            'formattedPrice'    => '1 ' . $this->getCurrencySign(),
             'icon'              => 'http://dummy.url/icon_1',
             'longDesc'          => 'Long Description 1',
             'link'              => 'http://link-to-article.de/1',

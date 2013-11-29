@@ -270,4 +270,34 @@ class CushymocoTestCase extends OxidTestCase
         return $oxArticle;
     }
 
+    /**
+     * @return string
+     */
+    public function getCurrencySign()
+    {
+        return $this->getOxConfig()
+            ->getActShopCurrencyObject()
+            ->sign;
+    }
+
+    /**
+     * @param $user
+     * @param $password
+     *
+     * @return void
+     */
+    public function login($user, $password)
+    {
+        $oxUser = oxNew('oxuser');
+        $oxUser->login($user, $password);
+    }
+
+    /**
+     * @return void
+     */
+    public function loginAsAdmin()
+    {
+        $this->login(oxADMIN_LOGIN, oxADMIN_PASSWD);
+    }
+
 }
