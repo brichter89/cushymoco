@@ -1410,4 +1410,55 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testAddToBasket()
+    {
+        $this->setRequestParam('anid', new oxField(1126));
+
+        $this->cushymoco->addToBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+
+        $this->assertSame(1, $ajaxResponse['result']);
+        $this->assertSame(1, $ajaxResponse['cartItemCount']);
+    }
+
+    /**
+     *
+     */
+    public function testAddToBasketAddMultipleArticles()
+    {
+        $this->setRequestParam('anid', new oxField(1131));
+        $this->setRequestParam('qty',  new oxField(2));
+
+        $this->cushymoco->addToBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+        $basketProducts = $this->getOxSession()->getBasket()->getContents();
+        $firstProductInBasket = array_shift($basketProducts);
+
+        $this->assertEquals(1, $ajaxResponse['result']);
+        $this->assertEquals(1, $ajaxResponse['cartItemCount']);
+        $this->assertEquals(2, $firstProductInBasket->getAmount());
+    }
+
+    /**
+     *
+     */
+    public function testAddToBasketWhenProductNotBuyable()
+    {
+        $this->setRequestParam('anid', new oxField(1127));
+
+        $this->cushymoco->addToBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+
+        $this->assertSame(
+            'Artikel ist nicht kaufbar',
+            $ajaxResponse['error']
+        );
+    }
+
 }
