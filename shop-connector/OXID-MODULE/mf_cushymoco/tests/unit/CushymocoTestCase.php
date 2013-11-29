@@ -288,8 +288,7 @@ class CushymocoTestCase extends OxidTestCase
      */
     public function login($user, $password)
     {
-        $oxUser = oxNew('oxuser');
-        $oxUser->login($user, $password);
+        oxNew('oxuser')->login($user, $password);
     }
 
     /**
@@ -298,6 +297,19 @@ class CushymocoTestCase extends OxidTestCase
     public function loginAsAdmin()
     {
         $this->login(oxADMIN_LOGIN, oxADMIN_PASSWD);
+    }
+
+    /**
+     * @param $anid
+     * @param $quantity
+     *
+     * @return void
+     */
+    public function addToBasket($anid, $quantity=1)
+    {
+        $this->getOxSession()
+            ->getBasket()
+            ->addToBasket($anid, $quantity);
     }
 
 }

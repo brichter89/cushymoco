@@ -1461,4 +1461,64 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testDeleteFromBasket()
+    {
+        $expected = array(
+            'success'       => true,
+            'totalProducts' => '0,00',
+            'shipping'      => false,
+            'total'         => '0,00',
+            'currency'      => $this->getCurrencySign(),
+        );
+
+        $this->addToBasket(1126);
+
+        $this->setRequestParam('anid', new oxField(1126));
+
+        $this->cushymoco->deleteFromBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+        $this->assertEquals(0, $ajaxResponse['cartItemCount']);
+    }
+
+    /**
+     *
+     */
+    public function testDeleteFromBasketWhenArticleNotExisting()
+    {
+        $this->setRequestParam('anid', new oxField('I do not exist!!!11'));
+
+        $this->cushymoco->deleteFromBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+
+        $this->assertSame(
+            'Shopping cart update failed.',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testDeleteFromBasketWhenNoArticleIdProvided()
+    {
+        $this->cushymoco->deleteFromBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+
+        $this->assertSame(
+            'Shopping cart update failed.',
+            $ajaxResponse['error']
+        );
+    }
+
 }
