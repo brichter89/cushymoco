@@ -1521,4 +1521,105 @@ class Unit_Modules_mf_cushymoco_Application_cushymocoTest extends CushymocoTestC
         );
     }
 
+    /**
+     *
+     */
+    public function testUpdateBasket()
+    {
+        $expected = array(
+            'success'       => true,
+            'productPrice'  => '3.366,00 ' . $this->getCurrencySign(),
+            'totalProducts' => '3.366,00',
+            'shipping'      => false,
+            'total'         => '3.366,00',
+            'currency'      => $this->getCurrencySign(),
+        );
+
+        $this->addToBasket(1126);
+
+        $this->setRequestParam('anid', new oxField(1126));
+        $this->setRequestParam('qty',  new oxField(99));
+
+        $this->cushymoco->updateBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+        $basketProducts = $this->getOxSession()->getBasket()->getContents();
+        $firstProductInBasket = array_shift($basketProducts);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+        $this->assertEquals(1, $ajaxResponse['cartItemCount']);
+        $this->assertEquals(99, $firstProductInBasket->getAmount());
+    }
+
+    /**
+     *
+     */
+    public function testUpdateBasketWhenQuantityNotProvided()
+    {
+        $expected = array(
+            'success'       => true,
+            'productPrice'  => '34,00 ' . $this->getCurrencySign(),
+            'totalProducts' => '34,00',
+            'shipping'      => false,
+            'total'         => '34,00',
+            'currency'      => $this->getCurrencySign(),
+        );
+
+        $this->addToBasket(1126, 99);
+
+        $this->setRequestParam('anid', new oxField(1126));
+
+        $this->cushymoco->updateBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+        $basketProducts = $this->getOxSession()->getBasket()->getContents();
+        $firstProductInBasket = array_shift($basketProducts);
+
+        $this->assertEquals(
+            $expected,
+            $ajaxResponse['result']
+        );
+        $this->assertEquals(1, $ajaxResponse['cartItemCount']);
+        $this->assertEquals(1, $firstProductInBasket->getAmount());
+    }
+
+    /**
+     *
+     */
+    public function testUpdateBasketWhenArticleIdNotProvided()
+    {
+        $this->addToBasket(1126);
+
+        $this->cushymoco->updateBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+
+        $this->assertSame(
+            'article id not provided',
+            $ajaxResponse['error']
+        );
+    }
+
+    /**
+     *
+     */
+    public function testUpdateBasketWhenArticleNotExisting()
+    {
+        $this->setRequestParam('anid', new oxField('I do not exist!!!11'));
+
+        $this->addToBasket(1126);
+
+        $this->cushymoco->updateBasket();
+
+        $ajaxResponse = $this->getAjaxResponseValue($this->cushymoco);
+
+        $this->assertSame(
+            'article could not be loaded',
+            $ajaxResponse['error']
+        );
+    }
+
 }
